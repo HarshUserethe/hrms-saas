@@ -1,9 +1,5 @@
-function DashboardPage() {
-  return (
-    <>
-      <p>welcome to dashboard</p>
-    </>
-  );
-}
+import { DashboardPage } from '@/modules/dashboard/components/dashboard-page';
 
-export default DashboardPage;
+export default function Page() {
+  return <DashboardPage />;
+}
