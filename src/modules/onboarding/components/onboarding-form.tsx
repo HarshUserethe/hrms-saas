@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useCallback } from 'react';
 import {
@@ -18,7 +18,6 @@ import {
   AlertCircle,
   Loader2,
   ChevronDown,
-  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -244,7 +243,7 @@ function Step1({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<Step1FormData>({
@@ -258,7 +257,7 @@ function Step1({
     },
   });
 
-  const orgName = watch('organizationName');
+  const orgName = useWatch({ control: control, name: 'organizationName' });
 
   // Auto-generate slug from company name
   React.useEffect(() => {
@@ -359,7 +358,7 @@ function Step2({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<Step2FormData>({
     resolver: zodResolver(step2Schema),
@@ -371,7 +370,7 @@ function Step2({
     },
   });
 
-  const password = watch('password') ?? '';
+  const password = useWatch({ control: control, name: 'password' }) ?? '';
 
   const strengthChecks = [
     { label: 'At least 8 characters', pass: password.length >= 8 },
@@ -559,7 +558,7 @@ function Step3({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<Step3FormData>({
@@ -571,7 +570,7 @@ function Step3({
     },
   });
 
-  const selectedCountry = watch('country');
+  const selectedCountry = useWatch({ control: control, name: 'country' });
 
   // Smart defaults: when country changes, pre-fill timezone & currency
   React.useEffect(() => {
@@ -916,10 +915,12 @@ export function OnboardingForm() {
 
         setIsSuccess(true);
 
-        // Redirect to dashboard after short delay
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 2000);
+        // Redirect to dashboard immediately
+        router.push(`${json.organization.slug}/dashboard`);
+
+        // setTimeout(() => {
+        //   router.push('/dashboard');
+        // }, 2000);
       } catch {
         setApiError({
           success: false,

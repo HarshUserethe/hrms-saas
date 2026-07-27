@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, AlertCircle, Loader2, LogIn } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import {
   loginSchema,
@@ -26,6 +27,7 @@ export function LoginForm({
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -40,13 +42,36 @@ export function LoginForm({
   });
 
   const onSubmit = useCallback(
-    async (_data: LoginFormSchemaType) => {
+    async (data: LoginFormSchemaType) => {
       setIsSubmitting(true);
-      setTimeout(() => {
+      setError(null);
+
+      try {
+        const response = await fetch('/api/auth/sign-in/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+          }),
+        });
+
+        console.log(response);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          setError(errorData?.message || 'Invalid email or password');
+          return;
+        }
+
         router.push(`/${organization.slug}/dashboard`);
-      }, 1500);
+      } catch {
+        setError('An unexpected error occurred. Please try again.');
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-    [router],
+    [router, organization.slug],
   );
 
   return (
@@ -54,13 +79,15 @@ export function LoginForm({
       <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="mb-8 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-sm">
-            <img
+            <Image
               className="h-full w-full rounded-xl object-cover"
               src={
                 organization.logoUrl ??
                 'https://i.pinimg.com/vwebp/1200x/5d/47/fe/5d47fe37a5795aeda79a43687cdf7509.webp'
               }
               alt="organization_logo"
+              width={48}
+              height={48}
             />
           </div>
           <div>
@@ -144,6 +171,13 @@ export function LoginForm({
               </p>
             )}
           </div>
+
+          {error && (
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
