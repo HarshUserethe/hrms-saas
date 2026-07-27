@@ -9,6 +9,8 @@ interface ProvidersProps {
   children: ReactNode;
 }
 
+export { useTheme } from './theme-provider';
+
 export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider>
