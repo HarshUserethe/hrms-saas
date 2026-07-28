@@ -9,20 +9,16 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import Script from 'next/script';
 
 interface ThemeProviderProps {
   children: ReactNode;
   attribute?: string;
   defaultTheme?: string;
   enableSystem?: boolean;
-  disableTransitionOnChange?: boolean;
   enableColorScheme?: boolean;
   storageKey?: string;
   themes?: string[];
   forcedTheme?: string;
-  value?: Record<string, string>;
-  nonce?: string;
 }
 
 interface ThemeContextType {
@@ -37,8 +33,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'theme';
-const DEFAULT_THEME = 'system';
-const THEMES = ['light', 'dark'];
+const DEFAULT_THEME = 'light';
 const DARK_MQ = '(prefers-color-scheme: dark)';
 
 function getSystemTheme(): string {
@@ -59,12 +54,12 @@ export function useTheme(): ThemeContextType {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
     return {
-      theme: undefined,
+      theme: 'light',
       setTheme: () => {},
       forcedTheme: undefined,
-      resolvedTheme: undefined,
+      resolvedTheme: 'light',
       themes: ['light', 'dark'],
-      systemTheme: undefined,
+      systemTheme: 'light',
     };
   }
   return ctx;
@@ -72,17 +67,14 @@ export function useTheme(): ThemeContextType {
 
 export function ThemeProvider({
   children,
-  attribute = 'class',
-  defaultTheme = 'system',
+  defaultTheme = 'light',
   enableSystem = true,
   enableColorScheme = true,
   storageKey = 'theme',
   themes = ['light', 'dark'],
   forcedTheme,
-  value,
-  nonce,
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<string | undefined>(
+  const [theme, setThemeState] = useState<string>(
     () => forcedTheme || getStoredTheme(storageKey, defaultTheme),
   );
   const [systemTheme, setSystemTheme] = useState<string>(() =>
@@ -101,19 +93,22 @@ export function ThemeProvider({
 
   const applyTheme = useCallback(
     (t: string) => {
+      if (typeof window === 'undefined') return;
       const root = document.documentElement;
       const resolved = resolveTheme(t);
 
-      const allClasses = themes.map((x) => (value?.[x] ? value[x] : x));
-      root.classList.remove(...allClasses);
-      const cls = value?.[resolved] || resolved;
-      root.classList.add(cls);
+      root.classList.remove('dark', 'light');
+      if (resolved === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.add('light');
+      }
 
       if (enableColorScheme) {
         root.style.colorScheme = resolved;
       }
     },
-    [themes, value, resolveTheme, enableColorScheme],
+    [resolveTheme, enableColorScheme],
   );
 
   const setTheme = useCallback(
@@ -159,7 +154,7 @@ export function ThemeProvider({
     return () => window.removeEventListener('storage', handler);
   }, [storageKey, applyTheme]);
 
-  const resolvedTheme = theme ? resolveTheme(theme) : undefined;
+  const resolvedTheme = resolveTheme(theme);
   const effectiveTheme = forcedTheme || theme;
 
   const contextValue = useMemo(
@@ -185,39 +180,6 @@ export function ThemeProvider({
   return (
     <ThemeContext.Provider value={contextValue}>
       {children}
-      <Script
-        id="theme-init"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-(function() {
-  var d = document.documentElement;
-  var themes = ${JSON.stringify(themes)};
-  var value = ${JSON.stringify(value)};
-  var attr = '${attribute}';
-  var enableColorScheme = ${enableColorScheme};
-
-  function apply(t) {
-    if (t === 'system') {
-      t = window.matchMedia('${DARK_MQ}').matches ? 'dark' : 'light';
-    }
-    var cls = value && value[t] ? value[t] : t;
-    d.classList.remove.apply(d.classList, themes.concat(Object.values(value || {})));
-    d.classList.add(cls);
-    if (enableColorScheme) d.style.colorScheme = t;
-  }
-
-  try {
-    var stored = localStorage.getItem('${storageKey}') || '${defaultTheme}';
-    apply(stored);
-  } catch(e) {
-    apply('${defaultTheme}');
-  }
-})();
-          `.trim(),
-        }}
-        nonce={nonce}
-      />
     </ThemeContext.Provider>
   );
 }

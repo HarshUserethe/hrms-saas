@@ -1,87 +1,116 @@
 'use client';
 
 import { Card } from './card';
-import type { HolidayEvent, EventCategory } from '../domain/types';
 import { ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import type { HolidayEvent } from '../domain/types';
 
 interface UpcomingHolidaysProps {
-  events: HolidayEvent[];
+  events?: HolidayEvent[];
   onViewCalendar?: () => void;
 }
 
-const categoryStyles: Record<EventCategory, string> = {
-  holiday: 'bg-blue-50 text-blue-700',
-  festival: 'bg-purple-50 text-purple-700',
-  birthday: 'bg-pink-50 text-pink-700',
-  anniversary: 'bg-amber-50 text-amber-700',
-  training: 'bg-green-50 text-green-700',
-  event: 'bg-sky-50 text-sky-700',
-};
+export function UpcomingHolidays({ onViewCalendar }: UpcomingHolidaysProps) {
+  const holidayList = [
+    {
+      id: '1',
+      dayMonth: '02 OCT',
+      title: 'Gandhi Jayanti',
+      dateText: 'Monday, 02 October 2023',
+      badgeText: 'Holiday',
+      isGreen: false,
+    },
+    {
+      id: '2',
+      dayMonth: '12 OCT',
+      title: 'Dussehra',
+      dateText: 'Thursday, 12 October 2023',
+      badgeText: 'Holiday',
+      isGreen: false,
+    },
+    {
+      id: '3',
+      dayMonth: '31 OCT',
+      title: 'Diwali',
+      dateText: 'Tuesday, 31 October 2023',
+      badgeText: 'Holiday',
+      isGreen: false,
+    },
+    {
+      id: '4',
+      dayMonth: '06 OCT',
+      title: 'Q3 Town Hall',
+      dateText: 'Friday, 06 October 2023',
+      badgeText: 'Event',
+      isGreen: true,
+    },
+  ];
 
-const categoryLabels: Record<EventCategory, string> = {
-  holiday: 'Holiday',
-  festival: 'Festival',
-  birthday: 'Birthday',
-  anniversary: 'Anniversary',
-  training: 'Training',
-  event: 'Event',
-};
-
-export function UpcomingHolidays({
-  events,
-  onViewCalendar,
-}: UpcomingHolidaysProps) {
   return (
-    <Card className="flex flex-col gap-4">
+    <Card className="flex flex-col justify-between space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-card-foreground text-lg font-semibold">
+        <h3 className="text-sm font-bold text-slate-900 sm:text-base dark:text-white">
           Upcoming Holidays & Events
         </h3>
         <button
           onClick={onViewCalendar}
-          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs font-medium transition-colors"
+          className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
         >
-          View Calendar
-          <ArrowRight className="h-3 w-3" />
+          View calendar
         </button>
       </div>
 
-      <div className="space-y-2">
-        {events.map((event) => {
-          const d = new Date(event.date);
-          const day = d.getDate();
-          const month = d.toLocaleDateString('en-US', { month: 'short' });
-
-          return (
-            <div
-              key={event.id}
-              className="hover:bg-muted/50 flex items-center gap-3 rounded-lg p-2.5 transition-colors"
-            >
-              <div className="border-border bg-background flex h-12 w-10 shrink-0 flex-col items-center justify-center rounded-lg border leading-none">
-                <span className="text-muted-foreground text-[10px] font-medium uppercase">
-                  {month}
-                </span>
-                <span className="text-card-foreground text-sm font-bold">
-                  {day}
+      {/* List */}
+      <div className="space-y-3">
+        {holidayList.map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center justify-between gap-3 border-b border-slate-100/80 pb-2.5 last:border-b-0 last:pb-0 dark:border-slate-800/60"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl text-xs leading-none font-bold ${
+                  item.isGreen
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                    : 'bg-slate-100/90 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
+                }`}
+              >
+                <span>{item.dayMonth.split(' ')[0]}</span>
+                <span className="text-[9px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  {item.dayMonth.split(' ')[1]}
                 </span>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-card-foreground text-sm font-medium">
-                  {event.title}
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                  {item.title}
+                </h4>
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  {item.dateText}
                 </p>
               </div>
-              <span
-                className={cn(
-                  'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium',
-                  categoryStyles[event.category],
-                )}
-              >
-                {categoryLabels[event.category]}
-              </span>
             </div>
-          );
-        })}
+            <span
+              className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
+                item.isGreen
+                  ? 'border-emerald-200/50 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/60 dark:text-emerald-400'
+                  : 'border-blue-200/50 bg-blue-50 text-blue-600 dark:border-blue-800/40 dark:bg-blue-950/60 dark:text-blue-400'
+              }`}
+            >
+              {item.badgeText}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom Link */}
+      <div className="flex items-center justify-center pt-1">
+        <button
+          onClick={onViewCalendar}
+          className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+        >
+          View full calendar
+          <ArrowRight className="h-3.5 w-3.5" />
+        </button>
       </div>
     </Card>
   );

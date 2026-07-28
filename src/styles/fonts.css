@@ -1,0 +1,17 @@
+/* 
+  Global Font Configuration
+  To change the primary font across the entire application:
+  Simply update the font-family in --font-primary below (e.g., 'Inter', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif).
+*/
+
+:root {
+  --font-primary:
+    'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

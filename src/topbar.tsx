@@ -2,75 +2,92 @@
 
 import { useTheme } from '@/providers/theme-provider';
 import { cn } from '@/lib/utils';
-import {
-  Search,
-  Bell,
-  MessageSquare,
-  Sun,
-  Moon,
-  ChevronDown,
-} from 'lucide-react';
+import { Search, Bell, Gift, Sun, Moon, ChevronDown, Menu } from 'lucide-react';
 
-export function Topbar() {
-  const { theme, setTheme } = useTheme();
+interface TopbarProps {
+  onMenuClick?: () => void;
+}
+
+export function Topbar({ onMenuClick }: TopbarProps) {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+
+  const currentTheme = theme === 'system' ? resolvedTheme : theme;
+  const isDark = currentTheme === 'dark';
 
   return (
-    <header className="border-border bg-background sticky top-0 z-20 flex h-16 shrink-0 items-center gap-4 border-b px-6">
-      <div
-        className={cn(
-          'border-border bg-muted/50 text-muted-foreground flex flex-1 items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors',
-          'focus-within:border-ring focus-within:ring-ring focus-within:ring-1',
-        )}
-      >
-        <Search className="h-4 w-4 shrink-0" />
-        <input
-          type="text"
-          placeholder="Search employees, payslips, policies..."
-          className="placeholder:text-muted-foreground flex-1 bg-transparent outline-none"
-        />
-        <kbd className="border-border bg-background text-muted-foreground hidden rounded border px-1.5 py-0.5 text-xs md:inline-block">
-          ⌘K
-        </kbd>
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-100 bg-white/90 px-4 backdrop-blur-md sm:px-8 dark:border-slate-800/80 dark:bg-slate-900/90">
+      {/* Mobile Menu Button & Search */}
+      <div className="flex max-w-md flex-1 items-center gap-3">
+        <button
+          onClick={onMenuClick}
+          className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:text-slate-700 lg:hidden dark:border-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+          aria-label="Open sidebar"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        <div
+          className={cn(
+            'flex w-full items-center gap-2.5 rounded-full border border-slate-200/80 bg-slate-50 px-4 py-2 text-xs transition-all dark:border-slate-700/60 dark:bg-slate-800/60',
+            'focus-within:border-blue-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:bg-slate-900',
+          )}
+        >
+          <Search className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search anything..."
+            className="w-full bg-transparent text-xs font-medium text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+          />
+          <kbd className="hidden rounded border border-slate-200 bg-white px-2 py-0.5 font-mono text-[10px] text-slate-400 sm:inline-block dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+            ⌘ K
+          </kbd>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* Right Actions */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Gift / Perks Icon */}
         <button
-          className="text-muted-foreground hover:bg-muted hover:text-foreground relative rounded-lg p-2 transition-colors"
+          className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+          aria-label="Rewards & Perks"
+        >
+          <Gift className="h-4 w-4 sm:h-5 sm:w-5" />
+        </button>
+
+        {/* Notifications Icon with Badge 3 */}
+        <button
+          className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           aria-label="Notifications"
         >
-          <Bell className="h-5 w-5" />
-          <span className="bg-destructive absolute top-1.5 right-1.5 h-2 w-2 rounded-full" />
+          <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-xs">
+            3
+          </span>
         </button>
 
+        {/* Theme Toggle */}
         <button
-          className="text-muted-foreground hover:bg-muted hover:text-foreground relative rounded-lg p-2 transition-colors"
-          aria-label="Messages"
-        >
-          <MessageSquare className="h-5 w-5" />
-          <span className="bg-primary absolute top-1.5 right-1.5 h-2 w-2 rounded-full" />
-        </button>
-
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg p-2 transition-colors"
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+          className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           aria-label="Toggle theme"
         >
-          {theme === 'dark' ? (
-            <Sun className="h-5 w-5" />
+          {isDark ? (
+            <Sun className="h-4 w-4 text-amber-500 sm:h-5 sm:w-5" />
           ) : (
-            <Moon className="h-5 w-5" />
+            <Moon className="h-4 w-4 text-slate-600 sm:h-5 sm:w-5" />
           )}
         </button>
 
-        <div className="border-border ml-2 flex items-center gap-3 border-l pl-3">
-          <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">
-            JD
+        {/* Profile Avatar Menu */}
+        <div className="flex items-center gap-1.5 pl-1 sm:pl-2">
+          <div className="relative h-8 w-8 overflow-hidden rounded-full border border-slate-200 sm:h-9 sm:w-9 dark:border-slate-700">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256"
+              alt="Sourav Sharma"
+              className="h-full w-full object-cover"
+            />
           </div>
-          <div className="hidden md:block">
-            <p className="text-foreground text-sm font-medium">John Doe</p>
-            <p className="text-muted-foreground text-xs">Software Engineer</p>
-          </div>
-          <ChevronDown className="text-muted-foreground h-4 w-4" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
         </div>
       </div>
     </header>
