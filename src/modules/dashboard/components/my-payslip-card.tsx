@@ -1,75 +1,94 @@
 'use client';
 
 import { Card } from './card';
-import type { Payslip, PayslipStatus } from '../domain/types';
-import { ArrowRight, Download } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Download, ArrowRight } from 'lucide-react';
+import type { Payslip } from '../domain/types';
 
 interface MyPayslipCardProps {
-  payslips: Payslip[];
+  payslips?: Payslip[];
   onViewAll?: () => void;
-  onDownload?: (id: string) => void;
 }
 
-const statusStyles: Record<PayslipStatus, string> = {
-  paid: 'bg-green-50 text-green-700',
-  pending: 'bg-amber-50 text-amber-700',
-  processing: 'bg-blue-50 text-blue-700',
-};
+export function MyPayslipCard({ onViewAll }: MyPayslipCardProps) {
+  const payslipItems = [
+    {
+      id: '1',
+      monthYear: 'September 2023',
+      netSalary: '₹ 72,450.00',
+      status: 'Paid',
+    },
+    {
+      id: '2',
+      monthYear: 'August 2023',
+      netSalary: '₹ 68,250.00',
+      status: 'Paid',
+    },
+    {
+      id: '3',
+      monthYear: 'July 2023',
+      netSalary: '₹ 70,100.00',
+      status: 'Paid',
+    },
+  ];
 
-export function MyPayslipCard({
-  payslips,
-  onViewAll,
-  onDownload,
-}: MyPayslipCardProps) {
   return (
-    <Card className="flex flex-col gap-4">
+    <Card className="flex flex-col justify-between space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-card-foreground text-lg font-semibold">
+        <h3 className="text-sm font-bold text-slate-900 sm:text-base dark:text-white">
           My Payslip
         </h3>
         <button
           onClick={onViewAll}
-          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs font-medium transition-colors"
+          className="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
         >
-          View All Payslips
-          <ArrowRight className="h-3 w-3" />
+          View all
         </button>
       </div>
 
-      <div className="space-y-2">
-        {payslips.map((slip) => (
+      {/* List */}
+      <div className="space-y-3">
+        {payslipItems.map((item) => (
           <div
-            key={slip.id}
-            className="border-border hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors"
+            key={item.id}
+            className="flex items-center justify-between rounded-xl border border-emerald-100/70 bg-emerald-50/40 p-3.5 dark:border-emerald-900/40 dark:bg-emerald-950/20"
           >
-            <div>
-              <p className="text-card-foreground text-sm font-medium">
-                {slip.month} {slip.year}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                ₹{slip.netSalary.toLocaleString()}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-900 dark:text-white">
+                  {item.monthYear}
+                </span>
+                <span className="rounded-full border border-emerald-200/50 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/60 dark:text-emerald-400">
+                  {item.status}
+                </span>
+              </div>
+              <div className="text-sm font-extrabold text-slate-900 dark:text-white">
+                {item.netSalary}
+              </div>
+              <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Net Salary
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  'rounded-full px-2 py-0.5 text-[10px] font-medium',
-                  statusStyles[slip.status],
-                )}
-              >
-                {slip.status.charAt(0).toUpperCase() + slip.status.slice(1)}
-              </span>
-              <button
-                onClick={() => onDownload?.(slip.id)}
-                className="text-muted-foreground hover:bg-muted hover:text-card-foreground rounded-lg p-1.5 transition-colors"
-                aria-label={`Download payslip for ${slip.month} ${slip.year}`}
-              >
-                <Download className="h-4 w-4" />
-              </button>
-            </div>
+
+            <button
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              aria-label={`Download ${item.monthYear} payslip`}
+            >
+              <Download className="h-4 w-4" />
+            </button>
           </div>
         ))}
+      </div>
+
+      {/* Bottom Link */}
+      <div className="flex items-center justify-center pt-1">
+        <button
+          onClick={onViewAll}
+          className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+        >
+          View all payslips
+          <ArrowRight className="h-3.5 w-3.5" />
+        </button>
       </div>
     </Card>
   );
