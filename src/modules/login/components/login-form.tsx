@@ -3,7 +3,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, AlertCircle, Loader2, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,6 +11,7 @@ import {
   loginSchema,
   type LoginFormSchemaType,
 } from '../domain/login-form-schema';
+import { authClient } from '@/lib/auth-client';
 
 export function LoginForm({
   organization,
@@ -24,7 +24,6 @@ export function LoginForm({
     logoUrl: string | null;
   };
 }) {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,31 +46,28 @@ export function LoginForm({
       setError(null);
 
       try {
-        const response = await fetch('/api/auth/sign-in/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const { data: response, error: authError } =
+          await authClient.signIn.email({
             email: data.email,
             password: data.password,
-          }),
-        });
+            rememberMe: true,
+          });
 
-        console.log(response);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          setError(errorData?.message || 'Invalid email or password');
+        if (authError) {
+          setError(authError.message || 'Invalid email or password');
           return;
         }
 
-        router.push(`/${organization.slug}/dashboard`);
+        console.log('Login Success:', response);
+
+        window.location.href = `/${organization.slug}/dashboard`;
       } catch {
         setError('An unexpected error occurred. Please try again.');
       } finally {
         setIsSubmitting(false);
       }
     },
-    [router, organization.slug],
+    [organization.slug],
   );
 
   return (
