@@ -22,6 +22,7 @@ import {
   X,
 } from 'lucide-react';
 import { useMemo } from 'react';
+import { authClient } from './lib/auth-client';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -52,6 +53,11 @@ export function Sidebar({ mobileOpen = false, setMobileOpen }: SidebarProps) {
   }, [pathname]);
 
   const isActive = (href: string) => pathname.includes(href);
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    window.location.href = `/${slug}/login`;
+  };
 
   return (
     <>
@@ -170,6 +176,8 @@ export function Sidebar({ mobileOpen = false, setMobileOpen }: SidebarProps) {
           </div>
 
           <button
+            type="button"
+            onClick={() => handleLogout()}
             className={cn(
               'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors',
               'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200',
