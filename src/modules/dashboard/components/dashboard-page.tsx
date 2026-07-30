@@ -11,15 +11,18 @@ import { QuickActions } from './quick-actions';
 import { MyPayslipCard } from './my-payslip-card';
 import { LatestUpdatesCard } from './latest-updates-card';
 import { Calendar, Clock, LogIn, LogOut, CheckCircle2 } from 'lucide-react';
-
+import { useAuthStore } from '@/stores/auth.store';
+import type { CurrentUserDto } from '@/types/auth/me.types';
 export function DashboardPage() {
+  const user: CurrentUserDto | null = useAuthStore((state) => state.user);
+  console.log('Current User Info.', user);
   return (
     <div className="mx-auto min-h-screen max-w-[1440px] space-y-6 bg-slate-50/50 p-4 sm:space-y-7 sm:p-6 lg:p-8 dark:bg-slate-950">
       {/* Greeting Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl lg:text-3xl dark:text-white">
-            Good afternoon, Sourav! 👋
+            Good afternoon, {user?.fullName}! 👋
           </h1>
           <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm dark:text-slate-400">
             Have a productive day ahead.
