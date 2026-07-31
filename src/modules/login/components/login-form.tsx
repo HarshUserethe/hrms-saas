@@ -50,8 +50,9 @@ export function LoginForm({
           await authClient.signIn.email({
             email: data.email,
             password: data.password,
+            organizationSlug: organization.slug,
             rememberMe: true,
-          });
+          } as unknown as Parameters<typeof authClient.signIn.email>[0]);
 
         if (authError) {
           setError(authError.message || 'Invalid email or password');
