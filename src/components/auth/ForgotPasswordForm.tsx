@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   Mail,
   CheckCircle2,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -38,11 +39,13 @@ export function ForgotPasswordForm({
 }: ForgotPasswordFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryable, setRetryable] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<ForgotPasswordFormSchemaType>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -51,35 +54,67 @@ export function ForgotPasswordForm({
     },
   });
 
-  const onSubmit = useCallback(
-    async (data: ForgotPasswordFormSchemaType) => {
+  const performRequest = useCallback(
+    async (email: string) => {
       setIsSubmitting(true);
       setError(null);
+      setRetryable(false);
       setSuccess(null);
 
       try {
         if (onSubmitProp) {
-          await onSubmitProp(data);
-        } else {
-          // Simulate API call delay for UI loading demonstration
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-          setSuccess(
-            'We have sent a link to reset your password to your work email.',
-          );
+          await onSubmitProp({ email });
+          setSuccess('A password reset link has been sent to your email.');
+          return;
         }
+
+        const response = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+
+        const result = (await response.json().catch(() => ({}))) as {
+          message?: string;
+        };
+
+        if (response.ok) {
+          setSuccess(
+            result.message ||
+              'A password reset link has been sent to your email.',
+          );
+          return;
+        }
+
+        // 5xx and network failures are retryable; business errors are not.
+        setRetryable(response.status >= 500);
+        setError(
+          result.message || 'An unexpected error occurred. Please try again.',
+        );
       } catch (err: unknown) {
+        setRetryable(true);
         if (err instanceof Error) {
           setError(
-            err.message || 'An unexpected error occurred. Please try again.',
+            err.message ||
+              'Network error. Please check your connection and try again.',
           );
         } else {
-          setError('An unexpected error occurred. Please try again.');
+          setError(
+            'Network error. Please check your connection and try again.',
+          );
         }
       } finally {
         setIsSubmitting(false);
       }
     },
     [onSubmitProp],
+  );
+
+  const onSubmit = useCallback(
+    async (data: ForgotPasswordFormSchemaType) => {
+      await performRequest(data.email);
+    },
+    [performRequest],
   );
 
   return (
@@ -173,9 +208,22 @@ export function ForgotPasswordForm({
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                {error}
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                <div className="flex items-start gap-2 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+                {retryable && (
+                  <button
+                    type="button"
+                    onClick={() => performRequest(getValues('email'))}
+                    disabled={isSubmitting}
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 transition-colors hover:text-red-800 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Try again
+                  </button>
+                )}
               </div>
             )}
 

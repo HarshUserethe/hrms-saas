@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 interface ResetPasswordPageRouteProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ token?: string; error?: string }>;
+  searchParams: Promise<{ token?: string }>;
 }
 
 export default async function ResetPasswordRoutePage({
@@ -24,26 +24,8 @@ export default async function ResetPasswordRoutePage({
 
   const resolvedSearchParams = await searchParams;
   const token = resolvedSearchParams.token;
-  const errorParam = resolvedSearchParams.error;
 
-  // Simulate token validations for inline error demonstration
-  let serverError: string | null = null;
-  if (!token) {
-    serverError =
-      'Reset token is missing or invalid. Please check your email or request a new reset link.';
-  } else if (errorParam === 'expired') {
-    serverError =
-      'This password reset link has expired. Please request a new link.';
-  } else if (errorParam === 'used') {
-    serverError =
-      'This reset token has already been used. Please request a new link.';
-  } else if (errorParam === 'invalid') {
-    serverError =
-      'The password reset token is invalid or malformed. Please try again.';
-  } else if (errorParam === 'server') {
-    serverError =
-      'An unexpected server error occurred. Please try again later.';
-  }
+  const isTokenMissing = !token;
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -75,10 +57,51 @@ export default async function ResetPasswordRoutePage({
 
         {/* Form Area */}
         <div className="flex w-full max-w-[480px] flex-1 flex-col justify-center">
-          <ResetPasswordForm
-            organization={organization}
-            serverError={serverError}
-          />
+          {isTokenMissing ? (
+            <div className="w-full max-w-md">
+              <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-6 w-6"
+                    >
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <path d="M12 9v4" />
+                      <path d="M12 17h.01" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                      {organization.name}
+                    </h2>
+                    <h1 className="text-xl font-bold text-gray-900">
+                      Invalid Link
+                    </h1>
+                  </div>
+                </div>
+
+                <p className="mb-6 text-sm leading-relaxed text-gray-500">
+                  This password reset link is missing or invalid. Please check
+                  your email for the full link, or request a new one.
+                </p>
+
+                <Link
+                  href={`/${slug}/forgot-password`}
+                  className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-blue-700 hover:shadow-md active:bg-blue-800"
+                >
+                  Request a new link
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <ResetPasswordForm organization={organization} token={token} />
+          )}
         </div>
 
         {/* Footer */}

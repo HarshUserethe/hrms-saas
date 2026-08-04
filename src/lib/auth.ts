@@ -5,6 +5,7 @@ import { createAuthMiddleware, APIError } from 'better-auth/api';
 
 import { prisma } from './db';
 import { organizationValidationService } from '@/modules/organization/applications/services/organization-validation.service';
+import { deliverResetPasswordEmail } from './email/reset-password';
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -13,6 +14,14 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+
+    resetPasswordTokenExpiresIn: 60 * 60, // 1 hour, in seconds
+
+    // Resolves the user's single active OrganizationMember (guaranteed unique by
+    // the one-user-one-organization constraint) and sends a tenant-aware link.
+    async sendResetPassword({ user, token }) {
+      await deliverResetPasswordEmail(user.id, user.email, token);
+    },
   },
 
   trustedOrigins: ['http://localhost:3000'],
