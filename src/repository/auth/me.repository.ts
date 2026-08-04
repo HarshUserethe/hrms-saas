@@ -10,7 +10,10 @@ export async function findCurrentUser(userId: string) {
       memberships: {
         where: {
           deletedAt: null,
+          status: 'ACTIVE',
         },
+        orderBy: { createdAt: 'asc' },
+        take: 1,
 
         include: {
           organization: true,

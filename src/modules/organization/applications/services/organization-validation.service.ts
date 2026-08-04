@@ -32,6 +32,9 @@ export class OrganizationValidationService {
 
   /**
    * Validate user organization membership and member status after credential verification.
+   *
+   * One-user-one-organization: a user has at most one live membership, so this is a
+   * direct compound lookup (orgId + userId) — no cross-membership filtering needed.
    */
   async validateMemberAfterAuth(organizationSlug: string, userId: string) {
     const organization =

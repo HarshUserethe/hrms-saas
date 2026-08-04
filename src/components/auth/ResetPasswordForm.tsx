@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { z } from 'zod';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -37,20 +39,32 @@ export interface ResetPasswordFormProps {
     slug: string;
     logoUrl: string | null;
   };
+  token: string;
   serverError?: string | null;
   onSubmit?: (data: ResetPasswordFormSchemaType) => Promise<void>;
 }
 
 export function ResetPasswordForm({
   organization,
+  token,
   serverError: serverErrorProp,
   onSubmit: onSubmitProp,
 }: ResetPasswordFormProps) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Redirect to login ~2s after successful reset.
+  useEffect(() => {
+    if (!success) return;
+    const timer = window.setTimeout(() => {
+      router.push(`/${organization.slug}/login`);
+    }, 2000);
+    return () => window.clearTimeout(timer);
+  }, [success, organization.slug, router]);
 
   const {
     register,
@@ -73,11 +87,31 @@ export function ResetPasswordForm({
       try {
         if (onSubmitProp) {
           await onSubmitProp(data);
-        } else {
-          // Simulate API call delay for UI loading demonstration
-          await new Promise((resolve) => setTimeout(resolve, 1500));
           setSuccess('Your password has been successfully reset.');
+          return;
         }
+
+        const response = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token,
+            newPassword: data.password,
+          }),
+        });
+
+        const result = (await response.json().catch(() => ({}))) as {
+          message?: string;
+        };
+
+        if (!response.ok) {
+          setError(
+            result.message || 'An unexpected error occurred. Please try again.',
+          );
+          return;
+        }
+
+        setSuccess('Your password has been successfully reset.');
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(
@@ -90,7 +124,7 @@ export function ResetPasswordForm({
         setIsSubmitting(false);
       }
     },
-    [onSubmitProp],
+    [onSubmitProp, token],
   );
 
   // Active error to show (either serverError passed down or local error state)
@@ -133,6 +167,9 @@ export function ResetPasswordForm({
               <div>
                 <p className="font-semibold text-emerald-900">Success</p>
                 <p className="mt-1 text-emerald-700">{success}</p>
+                <p className="mt-1 text-xs text-emerald-600">
+                  Redirecting you to the login page...
+                </p>
               </div>
             </div>
             <Link
