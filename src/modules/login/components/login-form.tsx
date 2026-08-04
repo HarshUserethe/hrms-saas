@@ -128,7 +128,7 @@ export function LoginForm({
                 Password
               </label>
               <Link
-                href="/forgot-password"
+                href={`/${organization.slug}/forgot-password`}
                 className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
               >
                 Forgot password?

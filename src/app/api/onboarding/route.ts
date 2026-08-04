@@ -17,14 +17,21 @@ export async function POST(req: NextRequest) {
     const onboardingUseCase = new OnboardCompanyUseCase();
     const onboardedResult = await onboardingUseCase.execute(validatedData);
 
-    // 3. Programmatically sign the user in via Better Auth
+    type SignInEmailBody = {
+      email: string;
+      password: string;
+      rememberMe?: boolean;
+    };
+    const signInBody = {
+      email: validatedData.ownerEmail,
+      password: validatedData.password,
+      organizationSlug: validatedData.organizationSlug,
+    } as unknown as SignInEmailBody;
+
     const signInResponse = await auth.api.signInEmail({
-      body: {
-        email: validatedData.ownerEmail,
-        password: validatedData.password,
-      },
-      asResponse: true, // Returns raw Response object to capture cookies
-      headers: req.headers, // Pass request headers for IP tracking and UA
+      body: signInBody,
+      asResponse: true,
+      headers: req.headers,
     });
 
     if (!signInResponse.ok) {
