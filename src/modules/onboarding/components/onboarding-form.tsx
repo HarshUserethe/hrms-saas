@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useCallback } from 'react';
@@ -855,7 +855,6 @@ function SuccessScreen({ orgName }: { orgName: string }) {
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export function OnboardingForm() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<AllFormData>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -915,12 +914,11 @@ export function OnboardingForm() {
 
         setIsSuccess(true);
 
-        // Redirect to dashboard immediately
-        router.push(`${json.organization.slug}/dashboard`);
-
-        // setTimeout(() => {
-        //   router.push('/dashboard');
-        // }, 2000);
+        // Hard-navigate so the full page reloads with the session cookie
+        // already set. A soft router.push() causes a race where AuthProvider's
+        // useEffect fires before the browser has processed the Set-Cookie
+        // headers, leaving the auth store empty until manual refresh.
+        window.location.href = `/${json.organization.slug}/dashboard`;
       } catch {
         setApiError({
           success: false,
@@ -931,7 +929,7 @@ export function OnboardingForm() {
         setIsLoading(false);
       }
     },
-    [formData, router],
+    [formData],
   );
 
   const goBack = useCallback(() => {
