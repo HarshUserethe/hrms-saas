@@ -1,0 +1,39 @@
+{
+  "version": "1",
+  "name": "Testing SaaS Application",
+  "items": [],
+  "environments": [],
+  "runtimeVariables": {},
+  "brunoConfig": {
+    "opencollection": "1.0.0",
+    "name": "Testing SaaS Application",
+    "type": "collection",
+    "ignore": ["node_modules", ".git"],
+    "proxy": {
+      "inherit": true,
+      "config": {
+        "protocol": "http",
+        "hostname": "",
+        "port": "",
+        "auth": {
+          "username": "",
+          "password": ""
+        },
+        "bypassProxy": ""
+      }
+    }
+  },
+  "securityConfig": {
+    "jsSandboxMode": "safe"
+  },
+  "settingsSelectedTab": "overview",
+  "folderLevelSettingsSelectedTab": {},
+  "allTags": [],
+  "format": "yml",
+  "importedAt": 1786135913234,
+  "lastAction": null,
+  "globalEnvironmentVariables": {},
+  "globalEnvSecrets": [],
+  "exportedAt": "2026-08-07T20:51:58.677Z",
+  "exportedUsing": "Bruno VS Code Extension"
+}
