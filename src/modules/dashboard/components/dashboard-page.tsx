@@ -13,9 +13,10 @@ import { LatestUpdatesCard } from './latest-updates-card';
 import { Calendar, Clock, LogIn, LogOut, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import type { CurrentUserDto } from '@/types/auth/me.types';
+
 export function DashboardPage() {
   const user: CurrentUserDto | null = useAuthStore((state) => state.user);
-  console.log('Current User Info.', user);
+
   return (
     <div className="mx-auto min-h-screen max-w-[1440px] space-y-6 bg-slate-50/50 p-4 sm:space-y-7 sm:p-6 lg:p-8 dark:bg-slate-950">
       {/* Greeting Header */}

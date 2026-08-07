@@ -85,6 +85,7 @@ model OrganizationMember {
   organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userRoles          UserRole[]
+  attendances        Attendance[]
 
   @@unique([organizationId, userId])
   @@index([organizationId])
@@ -93,6 +94,88 @@ model OrganizationMember {
   @@index([status])
   @@index([deletedAt])
   @@map("organization_members")
+}
+
+//===================================================
+// ATTENDANCE
+//===================================================
+
+model Attendance {
+  id String @id @default(uuid())
+
+  // Employee
+  organizationMemberId String             @map("organization_member_id")
+  organizationMember   OrganizationMember @relation(fields: [organizationMemberId], references: [id], onDelete: Cascade)
+
+  // Attendance Date
+  attendanceDate DateTime @map("attendance_date") @db.Date
+
+  // Clock Events
+  clockInAt  DateTime? @map("clock_in_at")
+  clockOutAt DateTime? @map("clock_out_at")
+
+  // Calculated Durations (Stored in Seconds)
+  totalPresenceSeconds Int @default(0) @map("total_presence_seconds")
+  totalBreakSeconds    Int @default(0) @map("total_break_seconds")
+  totalWorkingSeconds  Int @default(0) @map("total_working_seconds")
+  overtimeSeconds      Int @default(0) @map("overtime_seconds")
+
+  // Attendance Status
+  status AttendanceStatus @default(IN_PROGRESS)
+
+  // Future Enhancements
+  clockInIpAddress  String? @map("clock_in_ip_address")
+  clockOutIpAddress String? @map("clock_out_ip_address")
+
+  clockInDevice  String? @map("clock_in_device")
+  clockOutDevice String? @map("clock_out_device")
+
+  remarks String?
+
+  // Audit
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  breaks AttendanceBreak[]
+
+  @@unique([organizationMemberId, attendanceDate])
+  @@index([organizationMemberId])
+  @@index([attendanceDate])
+  @@index([status])
+  @@map("attendances")
+}
+
+enum AttendanceStatus {
+  IN_PROGRESS
+  PRESENT
+  HALF_DAY
+  ABSENT
+  HOLIDAY
+  WEEK_OFF
+  ON_LEAVE
+}
+
+//===================================================
+// ATTENDANCE BREAK
+//===================================================
+
+model AttendanceBreak {
+  id String @id @default(uuid())
+
+  attendanceId String     @map("attendance_id")
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  startedAt DateTime  @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+
+  durationSeconds Int @default(0) @map("duration_seconds")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([attendanceId])
+  @@map("attendance_breaks")
 }
 
 model Role {

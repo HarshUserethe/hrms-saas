@@ -3,20 +3,39 @@
 import { Card } from './card';
 import type { AttendanceData } from '../domain/types';
 import { LogOut, Coffee } from 'lucide-react';
+import { useAuthStore } from '@/stores/auth.store';
+import type { OrganizationMemberDto } from '@/types/auth/me.types';
 
 interface LiveAttendanceCardProps extends AttendanceData {
-  onClockOut?: () => void;
   onTakeBreak?: () => void;
 }
 
 export function LiveAttendanceCard({
   checkInTime = '09:02 AM',
-  dailyProgressHours = 3.06,
   workingDurationText = '03h 08m 24s',
   progressPercentage = 38,
-  onClockOut,
   onTakeBreak,
 }: LiveAttendanceCardProps) {
+  const member: OrganizationMemberDto | null = useAuthStore(
+    (state) => state.member,
+  );
+
+  const handleAttendance = async () => {
+    try {
+      if (member) {
+        const result = await fetch('/api/attendance/clock-in', {
+          method: 'POST',
+          body: JSON.stringify({
+            id: member.id,
+          }),
+        });
+        console.log(result);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Failed to clock in');
+    }
+  };
   return (
     <Card className="flex flex-col justify-between space-y-4">
       {/* Top Header */}
@@ -68,12 +87,19 @@ export function LiveAttendanceCard({
 
       {/* Action Buttons */}
       <div className="grid grid-cols-2 gap-3 pt-1">
-        <button
+        {/* <button
           onClick={onClockOut}
           className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-600 dark:hover:bg-blue-500"
         >
           <LogOut className="h-4 w-4" />
           Clock Out
+        </button> */}
+        <button
+          onClick={() => handleAttendance()}
+          className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-600 dark:hover:bg-blue-500"
+        >
+          <LogOut className="h-4 w-4" />
+          Clock In
         </button>
         <button
           onClick={onTakeBreak}
